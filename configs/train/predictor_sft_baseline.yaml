@@ -1,0 +1,37 @@
+# SFT baseline — AC predictor training on cached embeddings from the
+# SFT-initialised encoder (no JEPA refinement).
+
+model:
+  state_dim:  4096            # state embedding dim (from encoder)
+  action_dim: 4096            # action embedding dim (from encoder — same encoder)
+  static_dim: 4096            # demographics dim (from encoder)
+  hidden_dim: 1024
+  num_layers: 6
+  num_heads: 8
+  ffn_dim: 4096
+  max_timesteps: 72
+  ffn_dropout: 0.15
+  attn_dropout: 0.1
+  prediction_mode: absolute
+
+data:
+  embedding_dir: ${CLIN_JEPA_DATA}/embeddings/sft_baseline
+
+training:
+  epochs: 20
+  lr: 5.0e-4
+  weight_decay: 0.04
+  warmup_ratio: 0.1
+  batch_size: 256
+  gradient_clip: 1.0
+  precision: bf16
+  seed: 42
+  early_stopping_patience: 5
+  embedding_noise_std: 0.01
+  rollout_horizon: 2
+
+logging:
+  log_every: 50
+
+save:
+  dir: ${CLIN_JEPA_OUTPUT}/predictor_sft_baseline

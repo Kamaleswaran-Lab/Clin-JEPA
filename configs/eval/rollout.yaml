@@ -1,0 +1,62 @@
+# Autoregressive rollout — paper §5.2 drift evaluation.
+#
+# For each of the three training paradigms (Clin-JEPA and the two baselines),
+# this config points at the precomputed embedding cache, the trained predictor
+# checkpoint, and the output directory for predictions.
+
+rollout:
+  context_lengths: [6, 12, 24, 48]
+  batch_size: 64
+  precision: bf16
+  zero_actions: false   # set true to run an unconditional rollout ablation
+
+data:
+  split: test
+
+# Per-paradigm paths. model_config is required for the Clin-JEPA predictor
+# (saved as a bare state_dict) and an optional fallback for the others.
+plans:
+  clin_jepa:
+    embedding_dir: ${CLIN_JEPA_DATA}/embeddings/clin_jepa
+    predictor_checkpoint: ${CLIN_JEPA_OUTPUT}/clin_jepa_pretrain/checkpoints/best/predictor.pt
+    output_dir: ${CLIN_JEPA_OUTPUT}/evaluation/predictions/clin_jepa
+    model_config:
+      state_dim: 4096
+      action_dim: 4096
+      static_dim: 4096
+      hidden_dim: 1024
+      num_layers: 6
+      num_heads: 8
+      ffn_dim: 4096
+      max_timesteps: 72
+      prediction_mode: absolute
+
+  vjepa2ac:
+    embedding_dir: ${CLIN_JEPA_DATA}/embeddings/vjepa2ac
+    predictor_checkpoint: ${CLIN_JEPA_OUTPUT}/predictor_vjepa2ac/best.pt
+    output_dir: ${CLIN_JEPA_OUTPUT}/evaluation/predictions/vjepa2ac
+    model_config:
+      state_dim: 4096
+      action_dim: 4096
+      static_dim: 4096
+      hidden_dim: 1024
+      num_layers: 6
+      num_heads: 8
+      ffn_dim: 4096
+      max_timesteps: 72
+      prediction_mode: absolute
+
+  sft_baseline:
+    embedding_dir: ${CLIN_JEPA_DATA}/embeddings/sft_baseline
+    predictor_checkpoint: ${CLIN_JEPA_OUTPUT}/predictor_sft_baseline/best.pt
+    output_dir: ${CLIN_JEPA_OUTPUT}/evaluation/predictions/sft_baseline
+    model_config:
+      state_dim: 4096
+      action_dim: 4096
+      static_dim: 4096
+      hidden_dim: 1024
+      num_layers: 6
+      num_heads: 8
+      ffn_dim: 4096
+      max_timesteps: 72
+      prediction_mode: absolute

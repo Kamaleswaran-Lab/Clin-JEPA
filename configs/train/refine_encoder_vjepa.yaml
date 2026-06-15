@@ -1,0 +1,74 @@
+# V-JEPA 2-AC baseline — random-mask JEPA encoder refinement
+
+model:
+  base_model: Qwen/Qwen3-8B
+  checkpoint_dir: ${CLIN_JEPA_OUTPUT}/encoder_sft/final
+  attn_implementation: flash_attention_2
+  gradient_checkpointing: true
+  torch_dtype: bfloat16
+
+jepa_predictor:
+  embed_dim: 4096          # input/output dim — matches encoder
+  hidden_dim: 512          # internal bottleneck
+  num_layers: 3            # cross-attention decoder layers
+  num_heads: 8
+  ffn_dim: 2048
+  dropout: 0.1
+  max_position_id: 256     # safety buffer; max we'll see is 2*72+1 = 145
+
+data:
+  train_dir: ${CLIN_JEPA_DATA}/trajectories
+  val_dir:   ${CLIN_JEPA_DATA}/trajectories
+  max_seq_len: 4096
+
+training:
+  epochs: 1
+
+  lr_encoder: 5.0e-5
+  lr_predictor: 5.0e-4
+
+  weight_decay: 0.04
+
+  warmup_ratio: 0.05
+
+  # Symmetric state+action masking
+  mask_ratio: 0.40         # 40% of timesteps masked
+  min_visible: 2           # at least 2 visible timesteps per window
+
+  # EMA target schedule
+  tau_init: 0.996
+  tau_final: 1.0           # annealed linearly across total_steps
+
+  # eff_batch = per_gpu_batch_size × n_gpus × grad_accum
+  per_gpu_batch_size: 4
+  grad_accum: 4
+
+  seed: 42
+
+  gradient_clip_encoder: 0.5
+  gradient_clip_predictor: 1.0
+
+logging:
+  log_every: 25
+  eval_every: 250
+  eval_max_windows: 100
+  val_windows: 2000
+
+  # Abort if the encoder representation collapses (z_std → 0).
+  z_std_abort_threshold: 0.05
+
+  # Patience-based early stopping once val_loss plateaus.
+  early_stop:
+    enabled: true
+    patience: 5            # evals with no improvement → stop
+    min_steps: 500         # never trigger before step 500
+    min_delta: 0.001       # min relative improvement
+
+save:
+  dir: ${CLIN_JEPA_OUTPUT}/vjepa_refinement
+  save_best: true
+  save_final: true
+
+hf:
+  cache_dir: ${HF_HOME}
+  offline: true

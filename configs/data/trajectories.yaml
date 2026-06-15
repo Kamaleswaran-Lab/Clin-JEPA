@@ -1,0 +1,61 @@
+# Trajectory extraction — turn discretized events into trajectory shards.
+# Consumed by clin_jepa.data.step06_trajectories. State-text leakage
+# exclusions and per-step label targets are defined below.
+
+# --- Paths ---
+input_dir: ${CLIN_JEPA_DATA}/04_discretized
+splits_path: ${CLIN_JEPA_DATA}/05_splits/splits.csv
+output_dir: ${CLIN_JEPA_DATA}/trajectories
+
+# --- Windowing ---
+t_max: 72          # maximum trajectory length (hours)
+min_len: 6         # minimum trajectory length (cohort filter ensures >= 6h)
+stride: 12         # sliding window stride for stays >= t_max
+
+# --- Output ---
+shard_size: 10000  # windows per .pt shard
+
+# --- Parallelization ---
+n_workers: 10
+
+# --- State text exclusions ---
+state_text:
+  # Variables to EXCLUDE from state text
+  exclude_categories:
+    - diagnosis                      # temporal leakage (ICD codes at t=0)
+  exclude_variables:
+    # Derivative KDIGO variables
+    - creat_low_past_7day
+    - creat_low_past_48hr
+    - aki_stage_creat
+    - aki_stage_uo
+    - aki_stage_crrt
+    - aki_stage_smoothed
+    # Derivative urine output aggregations
+    - urineoutput_6hr
+    - urineoutput_12hr
+    - urineoutput_24hr
+    - uo_mlkghr_6hr
+    - uo_mlkghr_12hr
+    - uo_mlkghr_24hr
+    - uo_rt_6hr
+    - uo_rt_12hr
+    - uo_rt_24hr
+    # Categorical/metadata variables
+    - gcs_unable
+    - weight_type
+    - o2_delivery_device_1
+
+# --- Per-step label targets ---
+label_targets:
+  - {name: label_sofa_total, variable_name: sofa_24hours, source_table: sofa, agg: first}
+  - {name: label_sofa_resp, variable_name: respiration_24hours, source_table: sofa, agg: first}
+  - {name: label_sofa_cardio, variable_name: cardiovascular_24hours, source_table: sofa, agg: first}
+  - {name: label_sofa_renal, variable_name: renal_24hours, source_table: sofa, agg: first}
+  - {name: label_sofa_hepatic, variable_name: liver_24hours, source_table: sofa, agg: first}
+  - {name: label_sofa_coag, variable_name: coagulation_24hours, source_table: sofa, agg: first}
+  - {name: label_sofa_neuro, variable_name: cns_24hours, source_table: sofa, agg: first}
+  - {name: label_hr, variable_name: heart_rate, source_table: vitalsign, agg: mean}
+  - {name: label_map, variable_name: mbp, source_table: vitalsign, agg: mean}
+  - {name: label_sbp, variable_name: sbp, source_table: vitalsign, agg: mean}
+  - {name: label_rr, variable_name: resp_rate, source_table: vitalsign, agg: mean}

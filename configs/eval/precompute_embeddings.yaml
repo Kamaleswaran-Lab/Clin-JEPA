@@ -1,0 +1,39 @@
+# Precompute encoder embeddings (one cache per paradigm; only the encoder LoRA
+# checkpoint differs). Required for all three paradigms, including Clin-JEPA.
+
+# --- Shared settings ---
+model:
+  base_model: Qwen/Qwen3-8B
+  attn_implementation: flash_attention_2
+  gradient_checkpointing: false   # inference only
+  torch_dtype: bfloat16
+
+data:
+  trajectory_dir: ${CLIN_JEPA_DATA}/trajectories
+  max_seq_len: 4096
+
+inference:
+  embedding_dtype: float16        # on-disk storage dtype
+
+output:
+  schema_version: clin_jepa_embeddings_v1
+
+hf:
+  cache_dir: ${HF_HOME}
+  offline: true
+
+# --- Per-paradigm checkpoint + output dir ---
+# Selected at runtime via ``--plan <name>``. Each entry overrides the
+# ``model.checkpoint_dir`` and ``data.output_dir`` keys above.
+plans:
+  clin_jepa:
+    checkpoint_dir: ${CLIN_JEPA_OUTPUT}/clin_jepa_pretrain/checkpoints/best/online
+    output_dir:     ${CLIN_JEPA_DATA}/embeddings/clin_jepa
+
+  vjepa2ac:
+    checkpoint_dir: ${CLIN_JEPA_OUTPUT}/vjepa_refinement/checkpoints/best/online
+    output_dir:     ${CLIN_JEPA_DATA}/embeddings/vjepa2ac
+
+  sft_baseline:
+    checkpoint_dir: ${CLIN_JEPA_OUTPUT}/encoder_sft/best
+    output_dir:     ${CLIN_JEPA_DATA}/embeddings/sft_baseline

@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+*.so
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local environment overrides
+.env
+configs/data/mimic_paths.yaml
+
+# Data — never commit MIMIC-IV or derived data
+/data/
+ACT_JEPA_Data/
+*.parquet
+*.csv
+*.csv.gz
+!docs/**/*.csv  # exception: example tables in docs
+
+# Model checkpoints + intermediate outputs
+checkpoints/
+results/
+outputs/
+*.pt
+*.pth
+*.pkl
+*.pickle
+*.safetensors
+
+# HuggingFace cache (should be elsewhere via $HF_HOME)
+.cache/
+
+# Logs
+logs/
+slurm_logs/
+*.log
+runs/
+wandb/
+tb_logs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

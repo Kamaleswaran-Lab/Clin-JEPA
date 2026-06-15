@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clin-jepa"
+version = "0.1.0"
+description = "A Multi-Phase Co-Training Framework for Joint-Embedding Predictive Pretraining on EHR Patient Trajectories"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Anonymous" },
+]
+keywords = [
+    "jepa",
+    "joint-embedding-predictive-architecture",
+    "ehr",
+    "clinical-machine-learning",
+    "mimic-iv",
+    "self-supervised-learning",
+    "icu",
+    "patient-trajectory",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "torch>=2.5,<3",
+    "transformers>=4.48,<5",
+    "peft>=0.14,<1",
+    "accelerate>=1.2,<2",
+    "liger-kernel>=0.5,<1",
+    "numpy>=2.0,<3",
+    "pandas>=2.2,<3",
+    "pyarrow>=15",
+    "scikit-learn>=1.5,<2",
+    "pyyaml>=6,<7",
+    "tqdm>=4.65,<5",
+    "matplotlib>=3.8,<4",
+    "seaborn>=0.13,<1",
+    "lightgbm>=4,<5",
+    "umap-learn>=0.5,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5",
+    "pytest>=8",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["clin_jepa*"]
+exclude = ["tests*", "docs*", "scripts*", "configs*"]

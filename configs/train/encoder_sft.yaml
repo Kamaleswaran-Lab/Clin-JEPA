@@ -1,0 +1,53 @@
+# Encoder SFT — next-token-prediction fine-tuning on state + action texts.
+# Consumed by clin_jepa.training.encoder_sft.
+
+# --- Model ---
+model:
+  base_model: Qwen/Qwen3-8B
+  lora:
+    r: 16
+    alpha: 32
+    target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
+    dropout: 0.05
+    bias: none
+    task_type: CAUSAL_LM
+  attn_implementation: flash_attention_2
+  gradient_checkpointing: true
+  torch_dtype: bfloat16
+
+# --- Data ---
+data:
+  train_dir: ${CLIN_JEPA_DATA}/trajectories/train
+  val_dir: ${CLIN_JEPA_DATA}/trajectories/val
+  max_seq_len: 4096
+  text_separator: "\n"
+
+# --- Training ---
+training:
+  epochs: 1
+  lr: 1.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  scheduler: cosine
+  final_lr_ratio: 0.0        # cosine decay to 0
+  gradient_clip: 1.0
+  token_budget: 32768        # single-GPU path only
+  max_batch_size: 256
+  precision: bf16
+  seed: 42
+
+# --- Logging & Saving ---
+logging:
+  log_every: 50               # log train loss every N steps
+  eval_every: 500             # run validation every N steps
+  eval_max_batches: 50        # cap val batches for speed (per source)
+
+save:
+  dir: ${CLIN_JEPA_OUTPUT}/encoder_sft
+  save_best: true
+  save_final: true
+
+# --- HuggingFace ---
+hf:
+  cache_dir: ${HF_HOME}
+  offline: true

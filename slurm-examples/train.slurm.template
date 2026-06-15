@@ -1,0 +1,55 @@
+#!/bin/bash
+# =============================================================================
+# Clin-JEPA training — generic SLURM template.
+# =============================================================================
+# Edit the placeholders in angle brackets (<...>) for your cluster + workload.
+# Recommended hardware: 4-8x NVIDIA H100 or H200, 256-512 GB RAM, 16-22 CPUs.
+# Typical wall-clock for full Clin-JEPA pretraining: ~54 GPU-hours.
+#
+# Usage:
+#   sbatch slurm-examples/train.slurm.template <CONFIG_NAME>
+# where <CONFIG_NAME> is one of:
+#   pretrain_clin_jepa | refine_encoder_vjepa | predictor_vjepa2ac |
+#   predictor_sft_baseline | encoder_sft | ablation_no_warmup |
+#   ablation_no_alignment
+# =============================================================================
+
+#SBATCH -J clin-jepa
+#SBATCH -p <PARTITION>                     # e.g. gpu, gpu-hp, gpu-long
+#SBATCH --gres=gpu:<GPU_TYPE>:<N_GPUS>     # e.g. gpu:h200:4 or gpu:a100:8
+#SBATCH -c <N_CPUS>                        # ~4-6 CPUs per GPU
+#SBATCH --mem=<TOTAL_MEM>                  # e.g. 256G, 512G
+#SBATCH -t <WALLTIME>                      # e.g. 2-00:00:00 for 2 days
+#SBATCH -o logs/%x_%j.out
+#SBATCH -e logs/%x_%j.err
+#SBATCH --requeue
+#SBATCH --signal=B:USR1@120                # SIGUSR1 120 s before kill (optional)
+
+# --- Environment ---
+source /path/to/conda/etc/profile.d/conda.sh
+conda activate clin-jepa
+
+# Resolve paths from your environment (see .env.example).
+export PYTHONPATH=$(pwd):$PYTHONPATH
+export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface}
+export HF_HUB_OFFLINE=1                    # set to 0 on first run to download Qwen3-8B
+export TRANSFORMERS_OFFLINE=1
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+# --- Distributed setup (multi-GPU) ---
+export MASTER_ADDR=$(hostname)
+export MASTER_PORT=$((10000 + RANDOM % 40000))
+
+# --- Optional preemption-handling trap ---
+trap 'echo "[trap] SIGUSR1 received — flagging graceful shutdown"; \
+      pkill -USR1 -f clin_jepa.training || true' USR1
+
+# --- Training ---
+CONFIG_NAME=${1:-pretrain_clin_jepa}
+echo "Starting clin_jepa.training.${CONFIG_NAME} at $(date)"
+
+torchrun --nproc_per_node=<N_GPUS> --master_port=$MASTER_PORT \
+    -m clin_jepa.training.${CONFIG_NAME} \
+    --config configs/train/${CONFIG_NAME}.yaml
+
+echo "Training completed at $(date)"

@@ -1,0 +1,73 @@
+# Clin-JEPA w/o alignment — removes Phase 3 alignment and the Phase 4 hard sync.
+# Run with clin_jepa.training.ablation_no_alignment (not pretrain).
+
+model:
+  base_model: Qwen/Qwen3-8B
+  checkpoint_dir: ${CLIN_JEPA_OUTPUT}/encoder_sft/final
+  attn_implementation: flash_attention_2
+  gradient_checkpointing: true
+  torch_dtype: bfloat16
+
+predictor:
+  state_dim: 4096
+  action_dim: 4096
+  static_dim: 4096
+  hidden_dim: 1024
+  num_layers: 6
+  num_heads: 8
+  ffn_dim: 4096
+  max_timesteps: 72
+  ffn_dropout: 0.15
+  attn_dropout: 0.1
+  prediction_mode: absolute
+
+data:
+  train_dir: ${CLIN_JEPA_DATA}/trajectories
+  val_dir:   ${CLIN_JEPA_DATA}/trajectories
+  max_seq_len: 4096
+
+training:
+  lr_encoder:    5.0e-5
+  lr_predictor:  5.0e-4
+  weight_decay:  0.04
+
+  per_gpu_batch_size: 8
+  grad_accum: 2     # eff_batch = 8 × 4 × 2 = 64
+
+  warmup_ratio: 0.02
+
+  seed: 42
+
+  gradient_clip_encoder:  0.5
+  gradient_clip_predictor: 1.0
+
+  rollout_horizon: 2
+
+  # Phase schedule
+  phases:
+    phase_1_steps:  1024
+    phase_2a_steps: 1536
+    phase_2b_steps: 0       # no-alignment ablation: skip the EMA-convergence phase
+    phase_4_steps:  2048
+    # Total = 4608 opt-steps
+
+  ema:
+    tau_phase_2a: 0.996
+    tau_phase_2b: 0.996
+    target_precision: float32
+
+logging:
+  log_every: 25
+  eval_every: 200
+  eval_max_windows: 200
+  val_windows: 1000
+  z_std_abort_threshold: -1.0   # disabled
+
+save:
+  dir: ${CLIN_JEPA_OUTPUT}/ablation_no_alignment
+  save_best: true
+  save_final: true
+
+hf:
+  cache_dir: ${HF_HOME}
+  offline: true

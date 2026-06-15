@@ -1,0 +1,453 @@
+# =============================================================================
+# Feature Definitions and Event Domain Mapping
+# =============================================================================
+# Maps MIMIC-IV source tables to observation/action domains, defines which
+# columns to extract, and specifies text template formats.
+# See the paper, §3 (Data) and Appendix B, for full template details.
+# =============================================================================
+
+# --- Temporal discretization ---
+
+temporal:
+  step_size_hours: 1               # Hourly bins
+  max_steps: 336                   # 14 days max
+  min_obs_per_stay: 1              # Minimum observations to keep a stay
+
+# --- Observation events (patient state) ---
+# Each entry maps to a concepts table or raw table.
+# timestamp_col: column used for event timing
+# value_cols: columns containing numeric measurements
+# category: high-level category label
+
+observations:
+  vitalsign:
+    source: concepts.measurement.vitalsign
+    timestamp_col: charttime
+    join_col: stay_id
+    category: vitals
+    value_cols:
+      - heart_rate
+      - sbp
+      - dbp
+      - mbp
+      - sbp_ni
+      - dbp_ni
+      - mbp_ni
+      - resp_rate
+      - temperature
+      - spo2
+      - glucose
+
+  bg:
+    source: concepts.measurement.bg
+    timestamp_col: charttime
+    join_col: subject_id
+    category: blood_gas
+    row_filter:
+      column: specimen
+      values: ["ART."]
+    value_cols:
+      - so2
+      - po2
+      - pco2
+      - fio2
+      - fio2_chartevents
+      - ph
+      - baseexcess
+      - bicarbonate
+      - totalco2
+      - hematocrit
+      - hemoglobin
+      - chloride
+      - calcium
+      - potassium
+      - sodium
+      - lactate
+      - glucose
+      - aado2
+      - aado2_calc
+      - pao2fio2ratio
+
+  chemistry:
+    source: concepts.measurement.chemistry
+    timestamp_col: charttime
+    join_col: subject_id
+    category: labs
+    value_cols:
+      - albumin
+      - globulin
+      - total_protein
+      - aniongap
+      - bicarbonate
+      - bun
+      - calcium
+      - chloride
+      - creatinine
+      - glucose
+      - sodium
+      - potassium
+
+  complete_blood_count:
+    source: concepts.measurement.complete_blood_count
+    timestamp_col: charttime
+    join_col: subject_id
+    category: labs
+    value_cols:
+      - hematocrit
+      - hemoglobin
+      - mch
+      - mchc
+      - mcv
+      - platelet
+      - rbc
+      - rdw
+      - rdwsd
+      - wbc
+
+  coagulation:
+    source: concepts.measurement.coagulation
+    timestamp_col: charttime
+    join_col: subject_id
+    category: labs
+    value_cols:
+      - d_dimer
+      - fibrinogen
+      - thrombin
+      - inr
+      - pt
+      - ptt
+
+  enzyme:
+    source: concepts.measurement.enzyme
+    timestamp_col: charttime
+    join_col: subject_id
+    category: labs
+    value_cols: all  # Use all numeric columns
+
+  inflammation:
+    source: concepts.measurement.inflammation
+    timestamp_col: charttime
+    join_col: subject_id
+    category: labs
+    value_cols: all
+
+  cardiac_marker:
+    source: concepts.measurement.cardiac_marker
+    timestamp_col: charttime
+    join_col: subject_id
+    category: labs
+    value_cols: all
+
+  gcs:
+    source: concepts.measurement.gcs
+    timestamp_col: charttime
+    join_col: stay_id
+    category: assessment
+    value_cols: all  # GCS motor, verbal, eyes, total
+
+  urine_output:
+    source: concepts.measurement.urine_output
+    timestamp_col: charttime
+    join_col: stay_id
+    category: output
+    value_cols:
+      - urineoutput
+
+  urine_output_rate:
+    source: concepts.measurement.urine_output_rate
+    timestamp_col: charttime
+    join_col: stay_id
+    category: output
+    value_cols:
+      - uo
+      - urineoutput_6hr
+      - urineoutput_12hr
+      - urineoutput_24hr
+      - uo_mlkghr_6hr
+      - uo_mlkghr_12hr
+      - uo_mlkghr_24hr
+      - weight
+
+  kdigo_stages:
+    source: concepts.organfailure.kdigo_stages
+    timestamp_col: charttime
+    join_col: stay_id
+    category: organ_failure
+    value_cols:
+      - creat
+      - creat_low_past_7day
+      - creat_low_past_48hr
+      - aki_stage_creat
+      - uo_rt_6hr
+      - uo_rt_12hr
+      - uo_rt_24hr
+      - aki_stage_uo
+      - aki_stage_crrt
+      - aki_stage
+      - aki_stage_smoothed
+
+  oxygen_delivery:
+    source: concepts.measurement.oxygen_delivery
+    timestamp_col: charttime
+    join_col: stay_id
+    category: vitals
+    value_cols:
+      - o2_flow
+      - o2_flow_additional
+      - o2_delivery_device_1
+
+  blood_differential:
+    source: concepts.measurement.blood_differential
+    timestamp_col: charttime
+    join_col: subject_id
+    category: labs
+    value_cols:
+      - wbc
+      - neutrophils_abs
+      - lymphocytes_abs
+      - monocytes_abs
+      - eosinophils_abs
+      - basophils_abs
+      - bands
+      - immature_granulocytes
+      - nrbc
+
+  height:
+    source: concepts.measurement.height
+    timestamp_col: charttime
+    join_col: stay_id
+    category: vitals
+    value_cols:
+      - height
+
+  weight:
+    source: concepts.demographics.weight_durations
+    timestamp_col: starttime
+    join_col: stay_id
+    category: vitals
+    value_cols:
+      - weight
+      - weight_type
+
+  sofa:
+    source: concepts.score.sofa
+    timestamp_col: starttime
+    join_col: stay_id
+    category: score
+    value_cols:
+      - sofa_24hours
+      - respiration_24hours
+      - coagulation_24hours
+      - liver_24hours
+      - cardiovascular_24hours
+      - cns_24hours
+      - renal_24hours
+
+  rhythm:
+    source: concepts.measurement.rhythm
+    timestamp_col: charttime
+    join_col: subject_id
+    category: vitals
+    value_cols:
+      - heart_rhythm
+      - ectopy_type
+      - ectopy_frequency
+
+# --- Action events (clinical interventions) ---
+
+actions:
+  vasoactive_agent:
+    source: concepts.medication.vasoactive_agent
+    timestamp_col: starttime
+    end_col: endtime
+    join_col: stay_id
+    category: vasopressor
+    value_cols:
+      - dopamine
+      - epinephrine
+      - norepinephrine
+      - phenylephrine
+      - vasopressin
+      - dobutamine
+      - milrinone
+    is_continuous: true  # Has start/end times, active rate matters
+
+  norepinephrine_equivalent_dose:
+    source: concepts.medication.norepinephrine_equivalent_dose
+    timestamp_col: starttime
+    end_col: endtime
+    join_col: stay_id
+    category: vasopressor
+    value_cols:
+      - norepinephrine_equivalent_dose
+    is_continuous: true
+
+  antibiotic:
+    source: concepts.medication.antibiotic
+    timestamp_col: starttime
+    end_col: stoptime
+    join_col: stay_id
+    category: antibiotic
+    value_cols:
+      - antibiotic
+      - route
+
+  ventilation:
+    source: concepts.treatment.ventilation
+    timestamp_col: starttime
+    end_col: endtime
+    join_col: stay_id
+    category: ventilation
+    value_cols:
+      - ventilation_status
+    is_continuous: true
+
+  ventilator_setting:
+    source: concepts.measurement.ventilator_setting
+    timestamp_col: charttime
+    join_col: stay_id
+    category: ventilation_settings
+    value_cols: all
+
+  rrt:
+    source: concepts.treatment.rrt
+    timestamp_col: charttime
+    join_col: stay_id
+    category: dialysis
+    value_cols:
+      - dialysis_present
+      - dialysis_active
+      - dialysis_type
+
+  crrt:
+    source: concepts.treatment.crrt
+    timestamp_col: charttime
+    join_col: stay_id
+    category: dialysis
+    value_cols: all
+
+  invasive_line:
+    source: concepts.treatment.invasive_line
+    timestamp_col: starttime
+    end_col: endtime
+    join_col: stay_id
+    category: procedure
+    value_cols: all
+    is_continuous: true
+
+  neuroblock:
+    source: concepts.medication.neuroblock
+    timestamp_col: starttime
+    end_col: endtime
+    join_col: stay_id
+    category: neuromuscular_blocker
+    value_cols:
+      - drug_rate
+      - drug_amount
+    is_continuous: true
+
+  inputevents:
+    source: icu.inputevents
+    timestamp_col: starttime
+    end_col: endtime
+    join_col: stay_id
+    category: fluid_med_input
+    is_raw_table: true  # Compressed .csv.gz, read in chunks
+    is_continuous: true
+
+  procedureevents:
+    source: icu.procedureevents
+    timestamp_col: starttime
+    end_col: endtime
+    join_col: stay_id
+    category: procedure
+    is_raw_table: true
+    is_continuous: true
+
+  prescriptions:
+    source: hosp.prescriptions
+    timestamp_col: starttime
+    end_col: stoptime
+    join_col: hadm_id
+    category: medication_order
+    is_raw_table: true
+    is_continuous: true
+
+  emar:
+    source: hosp.emar
+    timestamp_col: charttime
+    join_col: hadm_id
+    category: medication_admin
+    is_raw_table: true
+
+# --- Static context (admission-level, not temporal) ---
+
+static:
+  demographics:
+    source: concepts.demographics.icustay_detail
+    cols:
+      - subject_id
+      - hadm_id
+      - stay_id
+      - gender
+      - admission_age
+      - race
+      - hospital_expire_flag
+      - los_icu
+      - first_icu_stay
+
+  comorbidity:
+    source: concepts.comorbidity.charlson
+    join_col: hadm_id
+    cols:
+      - charlson_comorbidity_index
+      - myocardial_infarct
+      - congestive_heart_failure
+      - peripheral_vascular_disease
+      - cerebrovascular_disease
+      - dementia
+      - chronic_pulmonary_disease
+      - rheumatic_disease
+      - peptic_ulcer_disease
+      - mild_liver_disease
+      - diabetes_without_cc
+      - diabetes_with_cc
+      - paraplegia
+      - renal_disease
+      - malignant_cancer
+      - severe_liver_disease
+      - metastatic_solid_tumor
+      - aids
+
+  diagnoses:
+    source: hosp.diagnoses_icd
+    descriptions: hosp.d_icd_diagnoses
+    join_col: hadm_id
+    category: diagnosis
+    # Processed by process_diagnoses() in Step 02 — specialized admission-level handler
+
+# --- Labels (for evaluation, extracted separately) ---
+
+labels:
+  sofa:
+    source: concepts.score.sofa
+    cols:
+      - sofa_24hours
+      - respiration_24hours
+      - coagulation_24hours
+      - liver_24hours
+      - cardiovascular_24hours
+      - cns_24hours
+      - renal_24hours
+
+  sepsis:
+    source: concepts.sepsis.sepsis3
+    cols:
+      - sepsis3
+      - suspected_infection_time
+      - sofa_time
+
+  mortality:
+    source: concepts.demographics.icustay_detail
+    cols:
+      - hospital_expire_flag

@@ -1,0 +1,20 @@
+# =============================================================================
+# Cohort Definition Criteria
+# =============================================================================
+
+inclusion:
+  min_age: 18                      # Adults only (age at ICU admission)
+  require_icu_stay: true           # Must have a valid ICU stay record
+
+exclusion:
+  min_icu_los_hours: 6             # Exclude stays < 6 hours
+  require_labs_or_vitals: true     # Must have at least one lab or vital during stay
+  keep_first_icu_stay_only: true   # For patients with multiple ICU stays per admission
+
+# Sepsis subcohort
+sepsis:
+  use_sepsis3: true                # Identified via concepts/sepsis/sepsis3.csv
+  # Sepsis-3: suspected infection + SOFA >= 2
+
+# Max ICU stay duration to consider (hours)
+max_icu_los_hours: 336             # 14 days — cap for temporal discretization

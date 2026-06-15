@@ -1,0 +1,43 @@
+# Clin-JEPA — pinned dependencies matching the environment used for paper experiments.
+#
+# Install:
+#   pip install -r requirements.txt
+#   pip install -e .
+#
+# Flash-Attention 2 is NOT listed here because pre-built wheels on PyPI often
+# do not match the torch + CUDA combo on a given system; the Python build
+# requires CUDA toolkit. Install it separately on a GPU node:
+#   pip install flash-attn==2.8.3 --no-build-isolation
+#
+# Core deep-learning stack
+torch==2.9.1
+torchvision==0.24.1
+torchaudio==2.9.1
+transformers==4.57.6
+peft==0.18.1
+accelerate==1.12.0
+liger-kernel==0.7.0
+safetensors==0.7.0
+tokenizers==0.22.2
+
+# Numerical + data
+numpy==2.2.6
+pandas==2.3.3
+pyarrow==23.0.0
+scipy==1.15.2
+scikit-learn==1.7.2
+
+# Config + logging
+pyyaml==6.0.3
+tqdm==4.67.3
+
+# Plotting (for evaluation figures)
+matplotlib==3.10.8
+seaborn==0.13.2
+
+# Baseline models
+lightgbm==4.6.0
+
+# Latent geometry visualization (UMAP cohort plot, §5.3)
+umap-learn==0.5.11
+pynndescent==0.6.0

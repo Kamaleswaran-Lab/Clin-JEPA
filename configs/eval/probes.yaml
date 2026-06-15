@@ -1,0 +1,100 @@
+# Downstream MLP probes — paper §5.4.
+#
+# Per-paradigm probe-training paths, plus shared probe-training and
+# probe-evaluation hyperparameters.
+
+# Per-paradigm paths. Embedding caches differ per paradigm; supplementary
+# labels are byte-identical across paradigms (they depend only on the raw
+# trajectories), so they may be symlinked to save disk.
+plans:
+  clin_jepa:
+    embedding_dir: ${CLIN_JEPA_DATA}/embeddings/clin_jepa
+    supplementary_dir: ${CLIN_JEPA_DATA}/embeddings/clin_jepa/supplementary_labels
+    probe_data_dir: ${CLIN_JEPA_DATA}/probe_training_data/clin_jepa
+    probes_dir: ${CLIN_JEPA_OUTPUT}/evaluation/probes/clin_jepa
+    metrics_dir: ${CLIN_JEPA_OUTPUT}/evaluation/metrics/clin_jepa
+    predictions_dir: ${CLIN_JEPA_OUTPUT}/evaluation/predictions/clin_jepa
+    figures_dir: ${CLIN_JEPA_OUTPUT}/evaluation/figures/clin_jepa
+
+  vjepa2ac:
+    embedding_dir: ${CLIN_JEPA_DATA}/embeddings/vjepa2ac
+    supplementary_dir: ${CLIN_JEPA_DATA}/embeddings/vjepa2ac/supplementary_labels
+    probe_data_dir: ${CLIN_JEPA_DATA}/probe_training_data/vjepa2ac
+    probes_dir: ${CLIN_JEPA_OUTPUT}/evaluation/probes/vjepa2ac
+    metrics_dir: ${CLIN_JEPA_OUTPUT}/evaluation/metrics/vjepa2ac
+    predictions_dir: ${CLIN_JEPA_OUTPUT}/evaluation/predictions/vjepa2ac
+    figures_dir: ${CLIN_JEPA_OUTPUT}/evaluation/figures/vjepa2ac
+
+  sft_baseline:
+    embedding_dir: ${CLIN_JEPA_DATA}/embeddings/sft_baseline
+    supplementary_dir: ${CLIN_JEPA_DATA}/embeddings/sft_baseline/supplementary_labels
+    probe_data_dir: ${CLIN_JEPA_DATA}/probe_training_data/sft_baseline
+    probes_dir: ${CLIN_JEPA_OUTPUT}/evaluation/probes/sft_baseline
+    metrics_dir: ${CLIN_JEPA_OUTPUT}/evaluation/metrics/sft_baseline
+    predictions_dir: ${CLIN_JEPA_OUTPUT}/evaluation/predictions/sft_baseline
+    figures_dir: ${CLIN_JEPA_OUTPUT}/evaluation/figures/sft_baseline
+
+# Shared paths
+data:
+  step04_dir: ${CLIN_JEPA_DATA}/discretized
+  probe_data_root: ${CLIN_JEPA_DATA}/probe_training_data
+
+probe_data:
+  max_samples_per_var: 1000000    # 1M cap per variable
+  seed: 42
+
+# 15 continuous-target variables for the §5.4 continuous evaluation.
+variables:
+  existing_11:  # already present in the trajectory-shard label tables
+    - label_hr
+    - label_map
+    - label_sbp
+    - label_rr
+    - label_sofa_total
+    - label_sofa_resp
+    - label_sofa_cardio
+    - label_sofa_renal
+    - label_sofa_hepatic
+    - label_sofa_coag
+    - label_sofa_neuro
+  new_4:  # extracted via the supplementary-label step
+    - label_temperature       # °C
+    - label_spo2              # %
+    - label_lactate           # mmol/L (sparse)
+    - label_urine_output      # mL/h
+  log_transform:  # skewed variables: apply log1p before z-score
+    - label_lactate
+    - label_urine_output
+
+# Stay-level binary outcomes (paper Track 2 subset).
+binary_outcomes:
+  - hospital_mortality
+  - true_icu_mortality
+  - mortality_7d
+  - mortality_14d
+  - mortality_30d
+  - mortality_90d
+  - prolonged_stay_7d
+  - sepsis_ever
+
+# Probe-training hyperparameters
+training:
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  batch_size: 4096
+  max_epochs: 100
+  patience: 10
+  train_val_split: 0.9
+  device: cuda
+  precision: fp32
+
+# Conformal-prediction settings (95% prediction intervals on held-out cal split)
+conformal:
+  alpha: 0.05
+  calibration_split: val
+
+# Metric estimation
+metrics:
+  bootstrap_iterations: 500
+  bootstrap_confidence: 0.95
+  bootstrap_cluster_by: stay_id

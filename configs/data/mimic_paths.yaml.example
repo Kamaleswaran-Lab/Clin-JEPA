@@ -1,0 +1,160 @@
+# =============================================================================
+# MIMIC-IV input and Clin-JEPA output paths.
+#
+# Copy this file to ``configs/data/paths.yaml`` and edit if needed. The
+# defaults below resolve against two environment variables:
+#
+#   $MIMIC_RAW       — root of your downloaded MIMIC-IV v3.1 release
+#                      (must contain icu/, hosp/, note/, concepts/).
+#   $CLIN_JEPA_DATA  — root for processed pipeline outputs (cohort, observations,
+#                      actions, discretized events, splits, trajectories,
+#                      embeddings, labels, etc.).
+#
+# See ``.env.example`` and ``docs/data-preparation.md`` for setup instructions.
+# Raw hosp/, icu/, note/ tables are gzip-compressed (``.csv.gz``); the
+# mimic-code concepts tables are plain ``.csv``.
+# =============================================================================
+
+# Convenience aliases
+data_dir: ${CLIN_JEPA_DATA}
+mimic_dir: ${MIMIC_RAW}
+
+# --- Raw MIMIC-IV tables (compressed .csv.gz) ---
+
+icu:
+  icustays:         ${MIMIC_RAW}/icu/icustays.csv.gz
+  inputevents:      ${MIMIC_RAW}/icu/inputevents.csv.gz
+  procedureevents:  ${MIMIC_RAW}/icu/procedureevents.csv.gz
+  d_items:          ${MIMIC_RAW}/icu/d_items.csv.gz
+  outputevents:     ${MIMIC_RAW}/icu/outputevents.csv.gz
+  chartevents:      ${MIMIC_RAW}/icu/chartevents.csv.gz       # ~40 GB compressed
+  caregiver:        ${MIMIC_RAW}/icu/caregiver.csv.gz
+  datetimeevents:   ${MIMIC_RAW}/icu/datetimeevents.csv.gz
+  ingredientevents: ${MIMIC_RAW}/icu/ingredientevents.csv.gz
+
+hosp:
+  admissions:           ${MIMIC_RAW}/hosp/admissions.csv.gz
+  patients:             ${MIMIC_RAW}/hosp/patients.csv.gz
+  diagnoses_icd:        ${MIMIC_RAW}/hosp/diagnoses_icd.csv.gz
+  d_icd_diagnoses:      ${MIMIC_RAW}/hosp/d_icd_diagnoses.csv.gz
+  d_icd_procedures:     ${MIMIC_RAW}/hosp/d_icd_procedures.csv.gz
+  d_hcpcs:              ${MIMIC_RAW}/hosp/d_hcpcs.csv.gz
+  d_labitems:           ${MIMIC_RAW}/hosp/d_labitems.csv.gz
+  prescriptions:        ${MIMIC_RAW}/hosp/prescriptions.csv.gz
+  emar:                 ${MIMIC_RAW}/hosp/emar.csv.gz
+  emar_detail:          ${MIMIC_RAW}/hosp/emar_detail.csv.gz
+  procedures_icd:       ${MIMIC_RAW}/hosp/procedures_icd.csv.gz
+  labevents:            ${MIMIC_RAW}/hosp/labevents.csv.gz
+  microbiologyevents:   ${MIMIC_RAW}/hosp/microbiologyevents.csv.gz
+  pharmacy:             ${MIMIC_RAW}/hosp/pharmacy.csv.gz
+  poe:                  ${MIMIC_RAW}/hosp/poe.csv.gz
+  poe_detail:           ${MIMIC_RAW}/hosp/poe_detail.csv.gz
+  transfers:            ${MIMIC_RAW}/hosp/transfers.csv.gz
+  services:             ${MIMIC_RAW}/hosp/services.csv.gz
+  drgcodes:             ${MIMIC_RAW}/hosp/drgcodes.csv.gz
+  hcpcsevents:          ${MIMIC_RAW}/hosp/hcpcsevents.csv.gz
+  omr:                  ${MIMIC_RAW}/hosp/omr.csv.gz
+  provider:             ${MIMIC_RAW}/hosp/provider.csv.gz
+
+note:
+  discharge:        ${MIMIC_RAW}/note/discharge.csv.gz
+  discharge_detail: ${MIMIC_RAW}/note/discharge_detail.csv.gz
+  radiology:        ${MIMIC_RAW}/note/radiology.csv.gz
+  radiology_detail: ${MIMIC_RAW}/note/radiology_detail.csv.gz
+
+# --- mimic-code concepts tables (plain .csv) ---
+# See https://github.com/MIT-LCP/mimic-code/tree/main/mimic-iv/concepts
+# for how to materialise these from BigQuery / DuckDB.
+
+concepts:
+  measurement:
+    vitalsign:             ${MIMIC_RAW}/concepts/measurement/vitalsign.csv
+    bg:                    ${MIMIC_RAW}/concepts/measurement/bg.csv
+    chemistry:             ${MIMIC_RAW}/concepts/measurement/chemistry.csv
+    complete_blood_count:  ${MIMIC_RAW}/concepts/measurement/complete_blood_count.csv
+    coagulation:           ${MIMIC_RAW}/concepts/measurement/coagulation.csv
+    enzyme:                ${MIMIC_RAW}/concepts/measurement/enzyme.csv
+    inflammation:          ${MIMIC_RAW}/concepts/measurement/inflammation.csv
+    cardiac_marker:        ${MIMIC_RAW}/concepts/measurement/cardiac_marker.csv
+    gcs:                   ${MIMIC_RAW}/concepts/measurement/gcs.csv
+    urine_output:          ${MIMIC_RAW}/concepts/measurement/urine_output.csv
+    ventilator_setting:    ${MIMIC_RAW}/concepts/measurement/ventilator_setting.csv
+    blood_differential:    ${MIMIC_RAW}/concepts/measurement/blood_differential.csv
+    creatinine_baseline:   ${MIMIC_RAW}/concepts/measurement/creatinine_baseline.csv
+    height:                ${MIMIC_RAW}/concepts/measurement/height.csv
+    icp:                   ${MIMIC_RAW}/concepts/measurement/icp.csv
+    oxygen_delivery:       ${MIMIC_RAW}/concepts/measurement/oxygen_delivery.csv
+    rhythm:                ${MIMIC_RAW}/concepts/measurement/rhythm.csv
+    urine_output_rate:     ${MIMIC_RAW}/concepts/measurement/urine_output_rate.csv
+
+  score:
+    sofa:    ${MIMIC_RAW}/concepts/score/sofa.csv
+    apsiii:  ${MIMIC_RAW}/concepts/score/apsiii.csv
+    lods:    ${MIMIC_RAW}/concepts/score/lods.csv
+    oasis:   ${MIMIC_RAW}/concepts/score/oasis.csv
+    sapsii:  ${MIMIC_RAW}/concepts/score/sapsii.csv
+    sirs:    ${MIMIC_RAW}/concepts/score/sirs.csv
+
+  sepsis:
+    sepsis3:                 ${MIMIC_RAW}/concepts/sepsis/sepsis3.csv
+    suspicion_of_infection:  ${MIMIC_RAW}/concepts/sepsis/suspicion_of_infection.csv
+
+  demographics:
+    icustay_detail:    ${MIMIC_RAW}/concepts/demographics/icustay_detail.csv
+    icustay_hourly:    ${MIMIC_RAW}/concepts/demographics/icustay_hourly.csv
+    icustay_times:     ${MIMIC_RAW}/concepts/demographics/icustay_times.csv
+    age:               ${MIMIC_RAW}/concepts/demographics/age.csv
+    weight_durations:  ${MIMIC_RAW}/concepts/demographics/weight_durations.csv
+
+  comorbidity:
+    charlson: ${MIMIC_RAW}/concepts/comorbidity/charlson.csv
+
+  medication:
+    vasoactive_agent:               ${MIMIC_RAW}/concepts/medication/vasoactive_agent.csv
+    norepinephrine_equivalent_dose: ${MIMIC_RAW}/concepts/medication/norepinephrine_equivalent_dose.csv
+    antibiotic:                     ${MIMIC_RAW}/concepts/medication/antibiotic.csv
+    norepinephrine:                 ${MIMIC_RAW}/concepts/medication/norepinephrine.csv
+    phenylephrine:                  ${MIMIC_RAW}/concepts/medication/phenylephrine.csv
+    vasopressin:                    ${MIMIC_RAW}/concepts/medication/vasopressin.csv
+    dopamine:                       ${MIMIC_RAW}/concepts/medication/dopamine.csv
+    dobutamine:                     ${MIMIC_RAW}/concepts/medication/dobutamine.csv
+    epinephrine:                    ${MIMIC_RAW}/concepts/medication/epinephrine.csv
+    milrinone:                      ${MIMIC_RAW}/concepts/medication/milrinone.csv
+    acei:                           ${MIMIC_RAW}/concepts/medication/acei.csv
+    neuroblock:                     ${MIMIC_RAW}/concepts/medication/neuroblock.csv
+    nsaid:                          ${MIMIC_RAW}/concepts/medication/nsaid.csv
+
+  treatment:
+    ventilation:    ${MIMIC_RAW}/concepts/treatment/ventilation.csv
+    rrt:            ${MIMIC_RAW}/concepts/treatment/rrt.csv
+    crrt:           ${MIMIC_RAW}/concepts/treatment/crrt.csv
+    invasive_line:  ${MIMIC_RAW}/concepts/treatment/invasive_line.csv
+
+  firstday:
+    first_day_bg:           ${MIMIC_RAW}/concepts/firstday/first_day_bg.csv
+    first_day_bg_art:       ${MIMIC_RAW}/concepts/firstday/first_day_bg_art.csv
+    first_day_gcs:          ${MIMIC_RAW}/concepts/firstday/first_day_gcs.csv
+    first_day_height:       ${MIMIC_RAW}/concepts/firstday/first_day_height.csv
+    first_day_lab:          ${MIMIC_RAW}/concepts/firstday/first_day_lab.csv
+    first_day_rrt:          ${MIMIC_RAW}/concepts/firstday/first_day_rrt.csv
+    first_day_sofa:         ${MIMIC_RAW}/concepts/firstday/first_day_sofa.csv
+    first_day_urine_output: ${MIMIC_RAW}/concepts/firstday/first_day_urine_output.csv
+    first_day_vitalsign:    ${MIMIC_RAW}/concepts/firstday/first_day_vitalsign.csv
+    first_day_weight:       ${MIMIC_RAW}/concepts/firstday/first_day_weight.csv
+
+  organfailure:
+    kdigo_creatinine: ${MIMIC_RAW}/concepts/organfailure/kdigo_creatinine.csv
+    kdigo_stages:     ${MIMIC_RAW}/concepts/organfailure/kdigo_stages.csv
+    kdigo_uo:         ${MIMIC_RAW}/concepts/organfailure/kdigo_uo.csv
+    meld:             ${MIMIC_RAW}/concepts/organfailure/meld.csv
+
+# --- Output directories (Clin-JEPA pipeline writes here) ---
+
+output:
+  base:           ${CLIN_JEPA_DATA}
+  cohort:         ${CLIN_JEPA_DATA}/cohort
+  observations:   ${CLIN_JEPA_DATA}/observations
+  actions:        ${CLIN_JEPA_DATA}/actions
+  discretized:    ${CLIN_JEPA_DATA}/discretized
+  splits:         ${CLIN_JEPA_DATA}/splits
+  trajectories:   ${CLIN_JEPA_DATA}/trajectories
