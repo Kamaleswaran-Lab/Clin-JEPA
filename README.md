@@ -3,6 +3,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
+> [!IMPORTANT]
+> ### 📢 News
+> - **[Sep 2026] 🛠️ Code update coming.** The accompanying paper has been revised with an expanded evaluation: a decomposition of rollout drift, a latent-geometry diagnosis in the encoder's native space, and a 34-task downstream benchmark. The end-to-end code behind these experiments is being prepared and will be released here over the coming weeks.
+> - **[Sep 2026] 🤗 Open-source model release.** The pretrained Clin-JEPA backbone, the co-trained encoder adapters together with the latent trajectory predictor, is being prepared for public release with loading code. Details will be announced here.
+
 Reference implementation of **Clin-JEPA: A Multi-Phase Co-Training Framework
 for Joint-Embedding Predictive Pretraining on EHR Patient Trajectories**.
 
